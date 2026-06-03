@@ -1,4 +1,4 @@
 interface:
-  display_name: "Sogou Offline"
-  short_description: "Block Sogou IME network access safely"
-  default_prompt: "Use $sogou-offline to restrict Sogou Input from accessing the network without breaking basic typing."
+  display_name: "搜狗输入法离线"
+  short_description: "限制搜狗输入法联网"
+  default_prompt: "使用 $sogou-offline 限制搜狗输入法联网，同时尽量保留基础打字能力。"

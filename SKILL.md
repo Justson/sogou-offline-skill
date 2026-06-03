@@ -1,60 +1,60 @@
 ---
 name: sogou-offline
-description: Restrict Sogou Input Method network access on Windows while preserving basic typing. Use when a user asks to block, limit, harden, restore, or diagnose Sogou/Sogou Pinyin/Sogou IME networking, including Windows Firewall rules, localhost proxy bypass via 127.0.0.1:7890, IFEO launch blocking, flickering popup/console flashes caused by blockers, or rollback of these changes.
+description: 在 Windows 上限制搜狗输入法联网，同时尽量保留基础打字能力。用户要求屏蔽、限制、诊断、恢复搜狗输入法/搜狗拼音/搜狗 IME 联网时使用；包括 Windows 防火墙规则、本机代理 127.0.0.1:7890 绕过、防火墙拦不住、IFEO 启动拦截、拦截后弹窗闪屏、恢复基础输入服务、回滚相关改动。
 ---
 
-# Sogou Offline
+# 搜狗输入法离线
 
-Use this skill for Windows machines where Sogou Input Method keeps reaching the network, especially through a local proxy. Prefer the bundled PowerShell script instead of rewriting registry and firewall commands.
+这个 skill 用于处理 Windows 上搜狗输入法持续联网的问题，特别是搜狗通过本机代理继续访问网络的情况。优先使用内置 PowerShell 脚本，不要每次重新手写注册表和防火墙命令。
 
-## Workflow
+## 工作流
 
-Set `$SkillDir` to this skill folder first. Typical locations:
+先设置 `$SkillDir` 为当前 skill 目录。常见位置：
 
 ```powershell
 $SkillDir = "$env:USERPROFILE\.claude\skills\sogou-offline"
-# or wherever this repository was cloned
+# 或者设置为这个仓库实际克隆的位置
 ```
 
-1. Inspect first:
+1. 先检查状态：
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File "$SkillDir\scripts\sogou-offline.ps1" -Action status
    ```
-2. Apply normal firewall blocking:
+2. 添加普通防火墙拦截：
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File "$SkillDir\scripts\sogou-offline.ps1" -Action firewall
    ```
-3. If Sogou still works online through `127.0.0.1:7890` or another localhost proxy, apply hardening from an elevated PowerShell:
+3. 如果搜狗仍然能通过 `127.0.0.1:7890` 或其他本机代理联网，使用强化拦截：
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File "$SkillDir\scripts\sogou-offline.ps1" -Action harden
    ```
-4. If blocking causes a focus popup or flashing console window, replace the blocker with a no-window `wscript.exe` blocker:
+4. 如果拦截后出现抢焦点、弹窗、黑框或闪屏，把拦截器切换为无窗口模式：
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File "$SkillDir\scripts\sogou-offline.ps1" -Action fix-flash
    ```
-5. If basic typing breaks, restore only the basic Sogou service while keeping network components blocked:
+5. 如果基础打字异常，只恢复搜狗基础服务，保留联网组件拦截：
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File "$SkillDir\scripts\sogou-offline.ps1" -Action restore-service
    ```
-6. If the user wants to undo everything created by this skill, run:
+6. 如果用户要撤销本 skill 创建的改动：
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File "$SkillDir\scripts\sogou-offline.ps1" -Action revert
    ```
 
-## Elevation
+## 管理员权限
 
-Firewall, IFEO registry, service, and scheduled-task changes normally require Administrator rights. If a direct run returns access denied, launch it elevated:
+防火墙、IFEO 注册表、服务、计划任务通常需要管理员权限。如果直接运行返回拒绝访问，用管理员 PowerShell 启动：
 
 ```powershell
 Start-Process powershell.exe -Verb RunAs -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File', "$SkillDir\scripts\sogou-offline.ps1", '-Action', 'harden')
 ```
 
-Use the requested action in place of `harden`.
+把 `harden` 换成用户需要的动作。
 
-## Important Details
+## 关键细节
 
-- Windows Firewall program rules may not stop local loopback traffic to `127.0.0.1`, so Sogou can still reach the internet through a local proxy such as port `7890`.
-- The `harden` action uses IFEO `Debugger` entries to stop Sogou cloud/web/assistant/update components from launching. It intentionally does not block `SogouImeBroker.exe`.
-- Avoid using `cmd.exe /c exit` as the IFEO debugger because it can create focus-stealing console flashes. Use the script's `fix-flash` action to set a silent `wscript.exe //B` blocker.
-- Do not disable unrelated proxy, browser, chat, or system firewall rules unless the user explicitly asks.
-- Keep logs in `%USERPROFILE%\SogouOfflineSkill.log`.
+- Windows 防火墙程序规则可能拦不住到 `127.0.0.1` 的本机回环连接，所以搜狗可以通过 `7890` 这类本机代理继续联网。
+- `harden` 使用 IFEO `Debugger` 项阻止搜狗云输入、网页、助手、更新等组件启动。它不会刻意拦截 `SogouImeBroker.exe`。
+- 不要用 `cmd.exe /c exit` 做 IFEO debugger，因为会造成抢焦点或控制台闪屏。遇到闪屏时运行 `fix-flash`，它会改成静默的 `wscript.exe //B` 拦截器。
+- 不要禁用无关的代理、浏览器、聊天软件或系统防火墙规则，除非用户明确要求。
+- 日志写入 `%USERPROFILE%\SogouOfflineSkill.log`。
