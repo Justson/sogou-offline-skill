@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sogou Offline"
+  short_description: "Block Sogou IME network access safely"
+  default_prompt: "Use $sogou-offline to restrict Sogou Input from accessing the network without breaking basic typing."
